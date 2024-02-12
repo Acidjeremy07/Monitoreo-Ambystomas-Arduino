@@ -54,17 +54,18 @@ void setup() {
   // Set ESP8266 mode
   sendCommand("AT+CWMODE=1\r\n", 1000, DEBUG);
   // Connect to WiFi network
-  sendCommand("AT+CWJAP=\"YourSSID\",\"YourPassword\"\r\n", 3000, DEBUG);
+  sendCommand("AT+CWJAP=\"Brandon\",\"Hola1234\"\r\n", 3000, DEBUG);
   delay(10000);
   // Check IP address
-  sendCommand("AT+CIFSR\r\n", 1000, DEBUG);
+  String ipAddress = sendCommand("AT+CIFSR\r\n", 1000, DEBUG);
+  Serial.print("IP Address: ");
+  Serial.println(ipAddress);
   // Enable multiple connections
   sendCommand("AT+CIPMUX=1\r\n", 1000, DEBUG);
   // Start server on port 80
   sendCommand("AT+CIPSERVER=1,80\r\n", 1000, DEBUG);
   Serial.println("Server Ready");
 }
-
 String prepareHTMLContent(float ph, float tds, float temperature, float oxygen, float turbidity) {
   String htmlContent = "<!DOCTYPE html><html><head><title>Mediciones del Sensor</title></head><body>";
   htmlContent += "<h1>Mediciones del Sensor</h1>";
