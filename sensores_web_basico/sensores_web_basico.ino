@@ -188,6 +188,30 @@ void loop() {
   closeCommand += connectionId;
   closeCommand += "\r\n";
   sendCommand(closeCommand, 1000, DEBUG);
+  // Imprimir datos de los sensores en el monitor serial
+  float ph = PHpromedio();
+  Serial.print("pH: ");
+  Serial.println(ph);
+
+  sensors.requestTemperatures();
+  float temperature = sensors.getTempCByIndex(0);
+  Serial.print("Temperatura: ");
+  Serial.println(temperature);
+
+  gravityTds.setTemperature(temperature);
+  gravityTds.update();
+  float tdsValue = gravityTds.getTdsValue();
+  Serial.print("TDS: ");
+  Serial.println(tdsValue);
+
+  float oxygen = oxigenodisuelto(calibracion);
+  Serial.print("Oxígeno Disuelto: ");
+  Serial.println(oxygen);
+
+  Serial.print("Turbidez: ");
+  Serial.println(ntu);
+
+  delay(5000); // Espera 5 segundos antes de volver a leer los sensores
 }
 
 float PHpromedio() {
