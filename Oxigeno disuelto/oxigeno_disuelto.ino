@@ -14,7 +14,7 @@ void loop()
     calibracion = voltajepromedio();
     i = i + 1;
   }
-  oxigenodisuelto(calibracion);
+  oxigenodisuelto(calibracion); 
   delay(1000);
 }
 
