@@ -26,6 +26,7 @@ float temperature = 25,tdsValue = 0;
 int ini = 0;
 float calibracion;
 int connectionId;
+float ntu;
 
 // WiFi module
 SoftwareSerial esp8266(19, 18); // RX1, TX1 (pins 18 and 19 respectively on Arduino Mega)
@@ -77,10 +78,22 @@ String prepareHTMLContent(float ph, float tds, float temperature, float oxygen, 
   return htmlContent;
 }
 
-void sendSensorDataToClient(int connectionId, float ph, float tds, float temperature, float oxygen, float turbidity) {
+void sendSensorDataToClient(int connectionId) {
+  // Leer datos de los sensores
+  float ph = PHpromedio();
+  float tds = tdsValue; // Valor de TDS leído en la función loop()
+  sensors.requestTemperatures();
+  float temperature = sensors.getTempCByIndex(0);
+  float oxygen = oxigenodisuelto(calibracion); // Se utiliza la variable calibracion previamente definida
+  float turbidity = ntu;
+
+  // Construir el contenido HTML con los datos de los sensores
   String htmlContent = prepareHTMLContent(ph, tds, temperature, oxygen, turbidity);
+
+  // Enviar la respuesta HTTP al cliente
   sendHTTPResponse(connectionId, htmlContent);
 }
+
 
 void loop() {
   if(esp8266.available()) {
@@ -164,7 +177,7 @@ void loop() {
       float temperature = sensors.getTempCByIndex(0);
       float oxygen = oxigenodisuelto(calibracion); // Se utiliza la variable calibracion previamente definida
       float turbidity = ntu;
-      sendSensorDataToClient(connectionId, ph, tds, temperature, oxygen, turbidity);
+      sendSensorDataToClient(connectionId);
 
     }  
   }
