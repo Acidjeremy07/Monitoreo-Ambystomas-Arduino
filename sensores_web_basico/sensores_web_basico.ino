@@ -13,11 +13,11 @@
 #define DEBUG true
 
 // Pin configurations
-#define TdsSensorPin A1
-#define PHPin A0
-#define ODin A2
-#define TempSensorPin 22
-#define TurbidityPin A4 // Pin de turbidez
+#define TdsSensorPin A1 //solidos disueltos TDS meter v1.0 (color negro)
+#define PHPin A0        //ph
+#define ODin A2         //oxigeno disuelto(atlas scientific amarillo)
+#define TempSensorPin 22//temperatura (sonda plateada)
+#define TurbidityPin A3 // Pin de turbidez(resina)
 
 // pH sensor calibration constants
 const float b = 42.59;
@@ -153,12 +153,11 @@ void loop() {
 
       content += "C, los TDS = ";
       content += ntu;
-      Serial.println("CRUDO"); // print out the value you read:
-      Serial.println(sensorValue); // print out the value you read:
-      Serial.println("VOLTAJE A 5V"); // print out the value you read:
-      Serial.println(voltage); // print out the value you read:
-      Serial.println("NTU"); // print out the value you read:
-      Serial.println(round(ntu)); // print out the value you read:
+      Serial.println("CRUDO"); 
+      Serial.println(sensorValue);
+      Serial.println("VOLTAJE A 5V"); 
+      Serial.println(voltage)
+      Serial.println(round(ntu)); 
       delay(1000);
 
       //SENSOR DE OXIGENO DISUELTO
