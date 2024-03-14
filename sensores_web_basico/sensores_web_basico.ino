@@ -13,11 +13,11 @@
 #define DEBUG true
 
 // Pin configurations
-#define TdsSensorPin A1 //solidos disueltos TDS meter v1.0 (color negro)
-#define PHPin A0        //ph
-#define ODin A2         //oxigeno disuelto(atlas scientific amarillo)
-#define TempSensorPin 22//temperatura (sonda plateada)
-#define TurbidityPin A3 // Pin de turbidez(resina)
+#define TdsSensorPin A1   //solidos disueltos TDS meter v1.0 (color negro)
+#define PHPin A0          //ph
+#define ODin A2           //oxigeno disuelto(atlas scientific amarillo)
+#define TempSensorPin 22  //temperatura (sonda plateada)
+#define TurbidityPin A3   // Pin de turbidez(resina) (TSS)
 
 // pH sensor calibration constants
 const float b = 42.59;
