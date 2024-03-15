@@ -4,7 +4,12 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #define DEBUG true
-
+/***********Calibracion TDS ***************
+     Calibration CMD:
+     enter -> ingrese enter para inciar la calbración
+     cal:tds value -> Calibrar con el valor de TDS conocido (25°C). Ejemplo: cal:707
+     exit -> Guardar los parámetros y salir del modo de calibración
+ ****************************************************/
 // Configuración de pines
 #define TdsSensorPin A1   //solidos disueltos TDS meter v1.0 (color negro)
 #define PHPin A0          //ph

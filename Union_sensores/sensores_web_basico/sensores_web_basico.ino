@@ -1,3 +1,4 @@
+// Libreria para conexión con ESP01
 #include <SoftwareSerial.h>
 #define DEBUG true
 //LIBRERIAS DE SENSOR TDS
@@ -6,19 +7,21 @@
 //LIBRERIAS DE SENSOR DE TEMPERATURA 
 #include <OneWire.h>                
 #include <DallasTemperature.h>
-/***********Calibracion TDS ***************
-     Calibration CMD:
-     enter -> ingrese enter para inciar la calbración
-     cal:tds value -> Calibrar con el valor de TDS conocido (25°C). Ejemplo: cal:707
-     exit -> Guardar los parámetros y salir del modo de calibración
- ****************************************************/
-#define TdsSensorPin A1
+
+// Configuración de pines
+#define TdsSensorPin A1   //solidos disueltos TDS meter v1.0 (color negro)
+#define PHPin A0          //ph
+#define ODin A2           //oxigeno disuelto(atlas scientific amarillo)
+#define TempSensorPin 22  //temperatura (sonda plateada)
+#define TurbidityPin A3   // Pin de turbidez(resina)(TSS)
+
+//Creación de instancia del objeto para el sensor TDS
 GravityTDS gravityTds;
+//Constante de calibración de TDS
 float temperature = 25,tdsValue = 0;
 
 // VARIABLES DE SENSOR PH
-const int PHPin = A0;  //Sensor conectado en PIN A0
-
+//
 //𝒚=−𝟓.𝟕𝒙+𝟐𝟏.𝟒
 //y = -9.53x + 42.59  nuestro valor
 
@@ -30,12 +33,15 @@ OneWire ourWire(2);                //Se establece el pin 2  como bus OneWire
 DallasTemperature sensors(&ourWire); //Se declara una variable u objeto para nuestro sensor
 
 //VARIABLES DE SENSOR DE OD
-const int ODin = A2;  //Sensor conectado en PIN A0
 float calibracion = 0;
 int ini = 0;
+int connectionId;
+float ntu;
+//Bandera de inicialización
+int initialized = 0;
 
 //Modulo WiFi
-SoftwareSerial esp8266(3,2);
+SoftwareSerial esp8266(19,18);
 
 void setup() {
   delay(1000);
@@ -50,7 +56,7 @@ void setup() {
 
   sendCommand("AT+RST\r\n",2000,DEBUG); // reset module
   sendCommand("AT+CWMODE=1\r\n",1000,DEBUG); // configure as access point
-  sendCommand("AT+CWJAP=\"INFINITUME5B9\",\"Lg5Qm3Rn4k\"\r\n",3000,DEBUG);
+  sendCommand("AT+CWJAP=\"kamehouse\",\"051177\"\r\n",3000,DEBUG);
   delay(10000);
   sendCommand("AT+CIFSR\r\n",1000,DEBUG); // get ip address
   sendCommand("AT+CIPMUX=1\r\n",1000,DEBUG); // configure for multiple connections
