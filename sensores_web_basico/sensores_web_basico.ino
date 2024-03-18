@@ -1,25 +1,23 @@
-#include <SoftwareSerial.h>
+#include <SoftwareSerial.h>     //Se usa para no tener que usar la comunicación con UART 
 #include <EEPROM.h>
 #include "GravityTDS.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
-
+#define DEBUG true
 /***********Calibracion TDS ***************
      Calibration CMD:
      enter -> ingrese enter para inciar la calbración
      cal:tds value -> Calibrar con el valor de TDS conocido (25°C). Ejemplo: cal:707
      exit -> Guardar los parámetros y salir del modo de calibración
  ****************************************************/
-#define DEBUG true
-
-// Pin configurations
+// Configuración de pines
 #define TdsSensorPin A1   //solidos disueltos TDS meter v1.0 (color negro)
 #define PHPin A0          //ph
 #define ODin A2           //oxigeno disuelto(atlas scientific amarillo)
 #define TempSensorPin 22  //temperatura (sonda plateada)
-#define TurbidityPin A3   // Pin de turbidez(resina) (TSS)
+#define TurbidityPin A3   // Pin de turbidez(resina)(TSS)
 
-// pH sensor calibration constants
+// Constantes para la calibración del Ph
 const float b = 42.59;
 const float m = -9.53;
 float temperature = 25,tdsValue = 0;
@@ -28,10 +26,10 @@ float calibracion;
 int connectionId;
 float ntu;
 
-// WiFi module
-SoftwareSerial esp8266(19, 18); // RX1, TX1 (pins 18 and 19 respectively on Arduino Mega)
+// Modulo Wi Fi
+SoftwareSerial esp8266(19, 18); // RX1 pin 18 y TX1 pin 19
 
-// TDS sensor
+// Creación de instancia del objeto para el sensor TDS
 GravityTDS gravityTds;
 
 // Temperature sensor
