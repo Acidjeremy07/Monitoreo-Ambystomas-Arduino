@@ -7,6 +7,8 @@
 //LIBRERIAS DE SENSOR DE TEMPERATURA 
 #include <OneWire.h>                
 #include <DallasTemperature.h>
+//Líbreria para JSON
+#include <ArduinoJson.h>
 
 // Configuración de pines
 #define TdsSensorPin A1   //solidos disueltos TDS meter v1.0 (color negro)
@@ -136,7 +138,18 @@ void loop()
       float porcentaje = oxigenodisuelto(calibracion);
       content += "<p>% de oxigeno disuelto: " + String(porcentaje) + "%</p>";
       delay(1000);
-    
+            // Construir el JSON
+      StaticJsonDocument<512> jsonDoc;
+      jsonDoc["PH"] = PHpromedio();
+      jsonDoc["TDS"] = tdsValue;
+      jsonDoc["Temperatura"] = sensors.getTempCByIndex(0);
+      jsonDoc["TSS"] = ntu;
+      jsonDoc["OxigenoDisuelto"] = oxigenodisuelto(calibracion);
+
+      String content;
+      serializeJson(jsonDoc, content); // Serializar el JSON a un String
+
+      sendHTTPResponse(connectionId, content, "application/json"); // Enviar el JSON como respuesta
        // Cerrar conexión
         String closeCommand = "AT+CIPCLOSE="; 
         closeCommand += connectionId;
@@ -273,20 +286,17 @@ String sendData(String command, const int timeout, boolean debug)
 * Name: sendHTTPResponse
 * Description: Function that sends HTTP 200, HTML UTF-8 response
 */
-void sendHTTPResponse(int connectionId, String content)
-{
-     
-     // build HTTP response
-     String httpResponse;
-     String httpHeader;
-     // HTTP Header
-     httpHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n"; 
-     httpHeader += "Content-Length: ";
-     httpHeader += content.length();
-     httpHeader += "\r\n";
-     httpHeader +="Connection: close\r\n\r\n";
-     httpResponse = httpHeader + content + " "; // There is a bug in this code: the last character of "content" is not sent, I cheated by adding this extra space
-     sendCIPData(connectionId,httpResponse);
+void sendHTTPResponse(int connectionId, String content, String contentType) {
+  String httpResponse;
+  String httpHeader;
+  // HTTP Header
+  httpHeader = "HTTP/1.1 200 OK\r\nContent-Type: ";
+  httpHeader += contentType; // Usar el tipo de contenido pasado como parámetro
+  httpHeader += "\r\nContent-Length: ";
+  httpHeader += content.length();
+  httpHeader += "\r\nConnection: close\r\n\r\n";
+  httpResponse = httpHeader + content + " "; // Agregar un espacio para asegurar el envío completo
+  sendCIPData(connectionId, httpResponse);
 }
  
 /*

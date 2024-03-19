@@ -3,7 +3,7 @@ const int PHPin = A0;  //Sensor conectado en PIN A0
 //𝒚=−𝟓.𝟕𝒙+𝟐𝟏.𝟒
 //y = -9.53x + 42.59  nuestro valor
 
-const float b = 42.59;  //Constante de la ecuación (Y = mx + b)
+const float b = 38.308;  //Constante de la ecuación (Y = mx + b)
 const float m = -9.53;  //Pendiente de la recta (Y = mx + b)
 
 void setup() {
