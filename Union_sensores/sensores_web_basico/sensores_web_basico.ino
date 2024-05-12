@@ -23,7 +23,6 @@ GravityTDS gravityTds;
 float temperature = 25,tdsValue = 0;
 
 // VARIABLES DE SENSOR PH
-//
 //𝒚=−𝟓.𝟕𝒙+𝟐𝟏.𝟒
 //y = -9.53x + 42.59  nuestro valor
 
@@ -52,17 +51,17 @@ void setup() {
   sensors.begin(); 
 
   gravityTds.setPin(TdsSensorPin);
-  gravityTds.setAref(5.0);          //Voltaje de referencia en el ADC, por defecto 5.0V en Arduino UNO
-  gravityTds.setAdcRange(1024);     //1024 para 10bit ADC;4096 para 12bit ADC
+  gravityTds.setAref(5.0);                            //Voltaje de referencia en el ADC, por defecto 5.0V en Arduino UNO
+  gravityTds.setAdcRange(1024);                       //1024 para 10bit ADC;4096 para 12bit ADC
   gravityTds.begin();     
 
-  sendCommand("AT+RST\r\n",2000,DEBUG); // reset module
-  sendCommand("AT+CWMODE=1\r\n",1000,DEBUG); // configure as access point
+  sendCommand("AT+RST\r\n",2000,DEBUG);               // reset module
+  sendCommand("AT+CWMODE=1\r\n",1000,DEBUG);          // configure as access point
   sendCommand("AT+CWJAP=\"kamehouse\",\"051177\"\r\n",3000,DEBUG);
   delay(10000);
-  sendCommand("AT+CIFSR\r\n",1000,DEBUG); // get ip address
-  sendCommand("AT+CIPMUX=1\r\n",1000,DEBUG); // configure for multiple connections
-  sendCommand("AT+CIPSERVER=1,80\r\n",1000,DEBUG); // turn on server on port 80
+  sendCommand("AT+CIFSR\r\n",1000,DEBUG);             // get ip address
+  sendCommand("AT+CIPMUX=1\r\n",1000,DEBUG);          // configure for multiple connections
+  sendCommand("AT+CIPSERVER=1,80\r\n",1000,DEBUG);    // turn on server on port 80
   
   Serial.println("Server Ready");         
 }

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control de TDS</title>
+</head>
+<body>
+    <h2>Control de TDS</h2>
+    <button onclick="calibrar()">Calibrar</button>
+    <button onclick="medir()">Medir TDS</button>
+
+    <script>
+        function calibrar() {
+            fetch('/calibrar')
+                .then(response => response.text())
+                .then(data => alert(data));
+        }
+
+        function medir() {
+            fetch('/medir')
+                .then(response => response.text())
+                .then(data => alert("TDS: " + data));
+        }
+    </script>
+</body>
+</html>
