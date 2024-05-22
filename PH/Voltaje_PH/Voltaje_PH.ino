@@ -1,6 +1,5 @@
 const int PHPin = A0;  //Sensor conectado en PIN A0
 
-
 void setup() {
   Serial.begin(9600);
 }
@@ -12,16 +11,12 @@ void loop() {
   delay(1000);
 }
 
-
-
-
 void impresion(float v) {
 
   Serial.print("Voltaje: ");
   Serial.println(v);
 
 }
-
 
 void voltajepromedio() {
   long muestras;       //Variable para las 10 muestras
