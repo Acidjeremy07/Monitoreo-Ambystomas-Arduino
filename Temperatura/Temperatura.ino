@@ -1,7 +1,7 @@
 #include <OneWire.h>                
 #include <DallasTemperature.h>
  
-OneWire ourWire(22);                //Se establece el pin 2  como bus OneWire
+OneWire ourWire(22);                //Se establece el pin 22  como bus OneWire
  
 DallasTemperature sensors(&ourWire); //Se declara una variable u objeto para nuestro sensor
 
@@ -18,5 +18,5 @@ float temp= sensors.getTempCByIndex(0); //Se obtiene la temperatura en ºC
 Serial.print("Temperatura= ");
 Serial.print(temp);
 Serial.println(" C");
-delay(100);                     
+delay(1500);                     
 }

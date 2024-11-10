@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arduino pH Control</title>
+    <script>
+        function fetchPHData() {
+            fetch('/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('phValue').innerText = 'PH: ' + data.ph + ', Voltaje: ' + data.voltaje;
+                });
+            setTimeout(fetchPHData, 5000);  // Actualizar cada 5 segundos
+        }
+    </script>
+</head>
+<body onload="fetchPHData()">
+    <h1>Send Command to Arduino</h1>
+    <form method="POST" action="/command">
+        <input type="text" name="command" placeholder="Enter command" required>
+        <button type="submit">Send Command</button>
+    </form>
+    <h2>Latest pH Reading: <span id="phValue">{{ latest_ph }}</span></h2>
+</body>
+</html>

@@ -12,9 +12,6 @@ float K = 0;
 float ntu = 0;
 int sensorValue = 0;
 
-
-
-
 float suma=0;
 int rep = 30;
 for(int i=0; i<rep; i++){

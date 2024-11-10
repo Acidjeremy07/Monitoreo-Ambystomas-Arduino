@@ -1,0 +1,4 @@
+Dentro del arduino IDE dentro de la configuración en el apartado de "Additional boards
+manager URLs" se debe incluir el siguiente texto:
+
+httpsarduino.esp8266.comstablepackage_esp8266com_index.json
