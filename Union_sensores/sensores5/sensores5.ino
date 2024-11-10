@@ -1,6 +1,6 @@
 #ifdef USE_PULSE_OUT
-  #include "do_iso_grav.h"       
-  Gravity_DO_Isolated DO = Gravity_DO_Isolated(A0);         
+ #include "do_iso_grav.h"       
+ Gravity_DO_Isolated DO = Gravity_DO_Isolated(A0);         
 #else
   #include "do_grav.h"
   Gravity_DO DO = Gravity_DO(A0);
