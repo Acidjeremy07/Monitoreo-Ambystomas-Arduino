@@ -3,14 +3,19 @@
 #include <PubSubClient.h>
 #include <Crypto.h>
 #include <SHA256.h>
-#include <Base64.h>
+#include <NTPClient.h>
 #include <ctype.h> // Necesario para toupper()
+#include <Base64.h>
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "GravityTDS.h"
 #include <EEPROM.h>
 #include <ArduinoJson.h>  // Necesario para parsear JSON
+
+// Agregar librerías para NTP
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
 // Implementación personalizada de strupr
 char* strupr(char* s) {
@@ -32,18 +37,22 @@ char* strupr(char* s) {
 #define ODSensorSerial Serial1 // Usa Serial1 (pines D0 y D1) para OD
 
 // Configuración WiFi
-const char* ssid = "TU_SSID";         // Reemplaza con el nombre de tu red WiFi
-const char* password = "TU_PASSWORD"; // Reemplaza con la contraseña de tu red WiFi
+const char* ssid = "Jeremy";         // Reemplaza con el nombre de tu red WiFi
+const char* password = "123456789"; // Reemplaza con la contraseña de tu red WiFi
 
 // Configuración de Azure IoT
 const char* hostName = "SistemaMonitoreo.azure-devices.net";
 const char* deviceId = "DEV-AXOLOTL-01";
-const char* sharedAccessKey = "Jf4YNyK2RUBdm5o7F7ewJ79PAw3nOaAjl4S8XJ226lU=";
+const char* sharedAccessKey = "Jf4YNyK2RUBdm5o7F7ewJ79PAw3nOaAjl4S8XJ226lU="; // Reemplaza con tu clave de acceso compartido
 
 // Variables de conexión MQTT
 const int mqttPort = 8883;
 WiFiSSLClient net;
 PubSubClient client(net);
+
+// Declarar objetos NTP
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 0, 60000); // Actualiza cada 60 segundos
 
 // Número de serie del dispositivo
 const char* deviceSerialNumber = "DEV-AXOLOTL-01";
@@ -135,6 +144,7 @@ void connectToAzure();
 String createSASToken(String resourceUri, String key, int expiryTime);
 String encodeBase64(const uint8_t* input, size_t length);
 void messageReceived(char* topic, byte* payload, unsigned int length);
+String URLEncode(const char* msg);
 
 void setup() {
   // Iniciar comunicaciones seriales
@@ -173,33 +183,38 @@ void setup() {
   }
   Serial.println("Conectado a WiFi!");
 
+  // Iniciar cliente NTP
+  timeClient.begin();
+  Serial.println("Obteniendo hora NTP...");
+  while (!timeClient.update()) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nHora NTP obtenida.");
+  Serial.print("Hora epoch: ");
+  Serial.println(timeClient.getEpochTime());
+
   // Configurar conexión SSL
   net.setCACert("-----BEGIN CERTIFICATE-----\n"
-                "MIIDdzCCAl+gAwIBAgIEbIOVwjANBgkqhkiG9w0BAQsFADBvMQswCQYDVQQGEwJV\n"
-                "UzEOMAwGA1UECBMFVGV4YXMxEDAOBgNVBAcTB1h4eXh4eXgxGDAWBgNVBAoTD1h4\n"
-                "eXh4eCBPcmcuIEx0ZC4xEDAOBgNVBAsTB1h4eXh4eXgxFDASBgNVBAMTC3d3dy54\n"
-                "eHh4eC5jb20wHhcNMTgwMTAxMDAwMDAwWhcNMjgwMTAxMDAwMDAwWjBvMQswCQYD\n"
-                "VQQGEwJVUzEOMAwGA1UECBMFVGV4YXMxEDAOBgNVBAcTB1h4eXh4eXgxGDAWBgNV\n"
-                "BAoTD1h4eXh4eCBPcmcuIEx0ZC4xEDAOBgNVBAsTB1h4eXh4eXgxFDASBgNVBAMT\n"
-                "C3d3dy54eHh4eC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+\n"
-                "FZP/qw2b+j6hlQgxxgJHzP+h/2VfFmG9+u0ztEjiUeZxkVlyZQKJNgX6gOHVkI4D\n"
-                "j1aPd0F+80xRgS8RlzFVmdWdQOcXC76N0v0QIfKIRtQbz00qT9dq0XYv1DAEjqQW\n"
-                "WvGO6e6ojC9JdChXWRkfMZrklJ+QXt2cmcLmu/xgKZxR8x0n5Zonxf+kzlFkO8zx\n"
-                "I4V/jvMG3Vyp/5hW6xBEg5u9X9IgJlOeOYzVxz0obdwd9qaJgj3OnzgfFIqCQYV2\n"
-                "uI0nxNR2Y3PPrPVczKQfhZO7VpL6+hwDPNy6jHFq6cRzHbXtwSxYvB57Hgvd+ZwO\n"
-                "Z1YcPTu0dYxVhFEHlVtvAgMBAAGjITAfMB0GA1UdDgQWBBRWx6PmBl1zWzZZP5wj\n"
-                "u6MeSL+K0zANBgkqhkiG9w0BAQsFAAOCAQEAJGcoo4PqKJeTQQjdG/vLkQ0wev2J\n"
-                "NU9pRvY6GfddPNOmX/tfFvJe88rAdLVOWjfQmqkFq4rH3gLwr5vH4sIomWfliL9j\n"
-                "3ZmY2GnS9/73RFKZqKYhCHpzKIMYosQf9Yld4kYJZ4wpDFV4dIqdPz5x6OpOQO8x\n"
-                "pFYzFA5l1bzLVRWjZ9SIVWbRZ1Q6QeyDWJoztzzN+yZ2LcR5YB4vgD3xjG61Db4Q\n"
-                "V+7ZZnLC22p9KEJNd5X/H+WmY48W7xM8qN5cVqjqH6gj9yrvJZpp+BRlE6rhPRng\n"
-                "u+LXNCDK6XeZmP8Hb2ffYEMXJh5cnK0eRMn7Sk+Pf3hOMkQNrQ==\n"
-                "-----END CERTIFICATE-----");
+  "MIICGTCCAZ+gAwIBAgIQCeCTZaz32ci5PhwLBCou8zAKBggqhkjOPQQDAzBOMQsw\n"
+  "CQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xJjAkBgNVBAMTHURp\n"
+  "Z2lDZXJ0IFRMUyBFQ0MgUDM4NCBSb290IEc1MB4XDTIxMDExNTAwMDAwMFoXDTQ2\n"
+  "MDExNDIzNTk1OVowTjELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJ\n"
+  "bmMuMSYwJAYDVQQDEx1EaWdpQ2VydCBUTFMgRUNDIFAzODQgUm9vdCBHNTB2MBAG\n"
+  "ByqGSM49AgEGBSuBBAAiA2IABMFEoc8Rl1Ca3iOCNQfN0MsYndLxf3c1TzvdlHJS\n"
+  "7cI7+Oz6e2tYIOyZrsn8aLN1udsJ7MgT9U7GCh1mMEy7H0cKPGEQQil8pQgO4CLp\n"
+  "0zVozptjn4S1mU1YoI71VOeVyaNCMEAwHQYDVR0OBBYEFMFRRVBZqz7nLFr6ICIS\n"
+  "B4CIfBFqMA4GA1UdDwEB/wQEAwIBhjAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49\n"
+  "BAMDA2gAMGUCMQCJao1H5+z8blUD2WdsJk6Dxv3J+ysTvLd6jLRl0mlpYxNjOyZQ\n"
+  "LgGheQaRnUi/wr4CMEfDFXuxoJGZSZOoPHzoRgaLLPIxAJSdYsiJvRmEFOml+wG4\n"
+  "DXZDjC5Ty3zfDBeWUA==\n"
+  "-----END CERTIFICATE-----\n");
 
   client.setCallback(messageReceived);
 
   connectToAzure();
 }
+
 
 void loop() {
   // Revisar si hay comandos entrantes
@@ -703,47 +718,89 @@ String encodeBase64(const uint8_t* input, size_t length) {
   return String(encodedData);
 }
 
-// Función para generar el SAS Token
-String createSASToken(String resourceUri, String key, int expiryTime) {
-  String stringToSign = resourceUri + "\n" + String(expiryTime);
+// Función para generar el SAS Token usando la hora NTP
+String createSASToken(String resourceUri, String key, int expiryDurationSeconds) {
+  // Obtener la hora actual en epoch
+  unsigned long currentTime = timeClient.getEpochTime();
+  unsigned long expiryTime = currentTime + expiryDurationSeconds;
 
-  // Decodificar clave base64
-  size_t keyLength = Base64.decodedLength((char*)key.c_str(), key.length());
+  String stringToSign = URLEncode(resourceUri.c_str()) + "\n" + String(expiryTime);
+
+  // Copiar la clave Base64 a un buffer modificable
+  char keyBuffer[key.length() + 1];
+  key.toCharArray(keyBuffer, key.length() + 1); // Copia la cadena en keyBuffer
+
+  // Calcular la longitud decodificada
+  int keyLength = Base64.decodedLength(keyBuffer, key.length());
+
+  // Crear un buffer para la clave decodificada
   uint8_t decodedKey[keyLength];
-  Base64.decode((char*)decodedKey, (char*)key.c_str(), key.length());
+
+  // Decodificar la clave Base64
+  Base64.decode((char*)decodedKey, keyBuffer, key.length());
 
   // Generar HMAC-SHA256
   uint8_t hmacResult[32];
   SHA256 sha256;
   sha256.resetHMAC(decodedKey, keyLength);
-  sha256.update((const uint8_t*)stringToSign.c_str(), stringToSign.length());
+  sha256.update(stringToSign.c_str(), stringToSign.length());
   sha256.finalizeHMAC(decodedKey, keyLength, hmacResult, sizeof(hmacResult));
 
   // Codificar el resultado HMAC en base64
   String signature = encodeBase64(hmacResult, sizeof(hmacResult));
+
   // Reemplazar caracteres especiales en URL
-  signature.replace("+", "%2B");
-  signature.replace("/", "%2F");
-  signature.replace("=", "%3D");
+  signature = URLEncode(signature.c_str());
 
   // Crear el SAS Token
-  String sasToken = "SharedAccessSignature sr=" + resourceUri +
+  String sasToken = "SharedAccessSignature sr=" + URLEncode(resourceUri.c_str()) +
                     "&sig=" + signature +
                     "&se=" + String(expiryTime);
   return sasToken;
 }
 
-// Conexión a Azure IoT
+
+// Función para codificar URL
+String URLEncode(const char* msg) {
+  const char *hex = "0123456789ABCDEF";
+  String encodedMsg = "";
+
+  while (*msg != '\0') {
+    if ( ('a' <= *msg && *msg <= 'z') ||
+         ('A' <= *msg && *msg <= 'Z') ||
+         ('0' <= *msg && *msg <= '9') ||
+         (*msg == '-') || (*msg == '_') || (*msg == '.') || (*msg == '~') ) {
+      encodedMsg += *msg;
+    } else {
+      encodedMsg += '%';
+      encodedMsg += hex[*msg >> 4];
+      encodedMsg += hex[*msg & 15];
+    }
+    msg++;
+  }
+  return encodedMsg;
+}
+
 void connectToAzure() {
+  if (!timeClient.update()) {
+    timeClient.forceUpdate();
+  }
+
   String resourceUri = String(hostName) + "/devices/" + deviceId;
-  int expiryTime = (int)(millis() / 1000) + 3600; // Expira en 1 hora
-  String sasToken = createSASToken(resourceUri, sharedAccessKey, expiryTime);
+  int expiryDuration = 3600; // 1 hora
+  String sasToken = createSASToken(resourceUri, sharedAccessKey, expiryDuration);
+
+  Serial.println("SAS Token generado:");
+  Serial.println(sasToken);
+
+  String mqttUsername = String(hostName) + "/" + deviceId + "/?api-version=2020-09-30";
+  Serial.println("MQTT Username:");
+  Serial.println(mqttUsername);
 
   client.setServer(hostName, mqttPort);
 
   while (!client.connected()) {
     Serial.println("Conectando a Azure IoT...");
-    String mqttUsername = String(hostName) + "/" + deviceId + "/?api-version=2020-09-30";
     if (client.connect(deviceId, mqttUsername.c_str(), sasToken.c_str())) {
       Serial.println("Conectado a Azure IoT!");
       // Suscribirse al tópico para recibir comandos
