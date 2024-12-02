@@ -11,12 +11,12 @@
      enter -> ingrese enter para inciar la calbración
      cal:tds value -> Calibrar con el valor de TDS conocido (25°C). Ejemplo: cal:707
      exit -> Guardar los parámetros y salir del modo de calibración
- ****************************************************/
+ **************************************** ************/
 
 #include <EEPROM.h>
 #include "GravityTDS.h"
 
-#define TdsSensorPin A0
+#define TdsSensorPin A1
 GravityTDS gravityTds;
 
 float temperature = 25,tdsValue = 0;
