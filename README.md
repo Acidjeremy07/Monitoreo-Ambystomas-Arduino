@@ -1,5 +1,5 @@
 # Monitoreo Ambystomas arduino
- TT de monitoreo de la especies ambystomas tomando en cuna el monitoreo de la calidad del agua donde se encuentran de manera ex situ
+ TT de monitoreo de la especies ambystomas tomando en cuenta el monitoreo de la calidad del agua donde se encuentran de manera ex situ
  Dentro del presente repositorio tenemos lo que es la forma de calibrar cada sensor así como la forma de usarlo de manera 
  individual, esto esta organizado por cada sensor de tal manera que se puede hayar cada código del sensor por carpeta con su nombre
  correspondiente
